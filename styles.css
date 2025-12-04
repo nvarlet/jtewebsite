@@ -92,6 +92,7 @@ body {
     align-items: center;
     cursor: pointer;
     transition: transform var(--transition-base);
+    text-decoration: none;
 }
 
 .logo:hover {
