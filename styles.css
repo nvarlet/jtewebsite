@@ -385,19 +385,134 @@ body {
 }
 
 /* ============================================
+   GALLERY SECTION
+   ============================================ */
+.gallery {
+    padding: var(--spacing-2xl) 0;
+    background: var(--white);
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+}
+
+.gallery-item {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background: var(--light-grey);
+    cursor: pointer;
+    transition: transform var(--transition-base);
+    box-shadow: var(--shadow-sm);
+}
+
+.gallery-item:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl);
+}
+
+.gallery-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--light-grey) 0%, var(--medium-grey) 100%);
+    color: var(--text-grey);
+    position: relative;
+}
+
+.gallery-image-placeholder svg {
+    width: 60px;
+    height: 60px;
+    margin-bottom: var(--spacing-sm);
+    opacity: 0.5;
+}
+
+.placeholder-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-grey);
+}
+
+.gallery-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(30, 58, 138, 0.9) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: var(--spacing-md);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.gallery-item:hover .gallery-overlay {
+    opacity: 1;
+}
+
+.gallery-info {
+    color: var(--white);
+    width: 100%;
+}
+
+.gallery-info h4 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--white);
+}
+
+.gallery-info p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    color: var(--white);
+    margin: 0;
+}
+
+/* When images are added, replace .gallery-image-placeholder with img */
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ============================================
    CLIENTS SECTION
    ============================================ */
 .clients {
     padding: var(--spacing-2xl) 0;
     background: var(--white);
+    overflow: hidden;
 }
 
-.clients-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: var(--spacing-md);
-    align-items: center;
+.clients-scroll-wrapper {
     margin-top: var(--spacing-xl);
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.clients-scroll {
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: center;
+    animation: scroll-clients 30s linear infinite;
+    width: fit-content;
+}
+
+.clients-scroll:hover {
+    animation-play-state: paused;
 }
 
 .client-logo {
@@ -408,6 +523,8 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 140px;
+    min-width: 220px;
+    flex-shrink: 0;
     transition: all var(--transition-base);
     border: 2px solid transparent;
     position: relative;
@@ -430,7 +547,7 @@ body {
 }
 
 .client-logo:hover {
-    transform: translateY(-4px);
+    transform: scale(1.05);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary-blue-light);
     background: var(--white);
@@ -577,6 +694,15 @@ body {
     }
 }
 
+@keyframes scroll-clients {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
 /* ============================================
    RESPONSIVE DESIGN
    ============================================ */
@@ -588,6 +714,11 @@ body {
     .services-grid {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: var(--spacing-md);
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-sm);
     }
 }
 
@@ -624,9 +755,17 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .clients-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-sm);
+    .gallery-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .client-logo {
+        min-width: 180px;
+        min-height: 120px;
+    }
+    
+    .clients-scroll {
+        gap: var(--spacing-md);
     }
     
     .contact-info {
