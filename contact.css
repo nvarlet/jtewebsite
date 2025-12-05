@@ -150,8 +150,8 @@
 
 .submit-button {
     padding: 1rem 2.5rem;
-    background: var(--text-dark);
-    color: var(--white);
+    background: transparent;
+    color: var(--text-dark);
     border: 2px solid var(--text-dark);
     border-radius: 0;
     font-weight: 600;

@@ -64,8 +64,8 @@ Each service card features:
 - **Clean White Header** - Professional navigation bar with logo
 - **Modern Typography** - Inter font for body text, Playfair Display for accents
 - **Smooth Animations** - Subtle transitions and hover effects throughout
-- **Responsive Design** - Fully optimized for all devices (mobile, tablet, desktop)
-- **Professional Color Scheme** - Blue and white palette with refined gradients
+- **Responsive Design** - Fully optimised for all devices (mobile, tablet, desktop)
+- **Professional Colour Scheme** - Blue and white palette with refined gradients
 - **Accessibility** - Reduced motion support for users with motion sensitivity
 
 ---
@@ -137,7 +137,7 @@ This website was designed with **professionalism** and **clean aesthetics** in m
 - Minimal, uncluttered layouts
 - Generous white space
 - Subtle animations that enhance rather than distract
-- Professional color palette
+- Professional colour palette
 - Clear visual hierarchy
 - Smooth user experience
 
@@ -146,7 +146,7 @@ This website was designed with **professionalism** and **clean aesthetics** in m
 ## 📝 Notes
 
 - Client logo placeholders are ready to be replaced with actual logo images
-- All colors, spacing, and typography use CSS variables for easy customization
+- All colours, spacing, and typography use CSS variables for easy customisation
 - The website is fully accessible and follows modern web standards
 - No JavaScript is required - pure CSS animations and interactions
 
