@@ -764,11 +764,14 @@ body {
     
     .nav {
         gap: var(--spacing-sm);
+        justify-content: center;
+        flex-wrap: wrap;
     }
     
     .nav-links-left {
         gap: var(--spacing-sm);
-        margin-left: var(--spacing-sm);
+        margin-left: 0;
+        margin-right: 0;
     }
     
     .nav-link {
@@ -776,8 +779,10 @@ body {
     }
     
     .nav-contact {
-        padding: 0.4rem 1.2rem;
+        padding: 0;
         font-size: 0.85rem;
+        border: none;
+        margin-left: 0;
     }
     
     .logo-image {

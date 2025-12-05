@@ -215,3 +215,32 @@
         initCarousel();
     }
 })();
+
+// Reload page to top functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // JTE Logo - reload page to top
+    const logoLink = document.querySelector('.logo[href="index.html"]');
+    if (logoLink) {
+        logoLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+                window.location.reload();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+    }
+    
+    // BACK TO TOP button - reload page to top
+    const backToTopButton = document.querySelector('.contact-cta-secondary[href="index.html"]');
+    if (backToTopButton) {
+        backToTopButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+                window.location.reload();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+    }
+});
