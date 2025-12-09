@@ -243,4 +243,65 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Formspree form submission handling
+    const contactForm = document.getElementById('contactForm');
+    const formStatus = document.getElementById('form-status');
+    
+    if (contactForm && formStatus) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Disable submit button
+            const submitButton = contactForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'SENDING...';
+            
+            // Hide any previous status messages
+            formStatus.style.display = 'none';
+            
+            // Get form data
+            const formData = new FormData(contactForm);
+            
+            // Submit to Formspree
+            fetch(contactForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Success
+                    formStatus.style.display = 'block';
+                    formStatus.style.backgroundColor = '#d4edda';
+                    formStatus.style.color = '#155724';
+                    formStatus.style.border = '1px solid #c3e6cb';
+                    formStatus.textContent = 'Thank you! Your message has been sent successfully. We will get back to you soon.';
+                    contactForm.reset();
+                } else {
+                    // Error from Formspree
+                    throw new Error('Form submission failed');
+                }
+            })
+            .catch(error => {
+                // Network or other error
+                formStatus.style.display = 'block';
+                formStatus.style.backgroundColor = '#f8d7da';
+                formStatus.style.color = '#721c24';
+                formStatus.style.border = '1px solid #f5c6cb';
+                formStatus.textContent = 'Sorry, there was an error sending your message. Please try again or contact us directly at sales@jteevents.com.au';
+            })
+            .finally(() => {
+                // Re-enable submit button
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+                
+                // Scroll to status message
+                formStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        });
+    }
 });

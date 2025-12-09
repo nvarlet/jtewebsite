@@ -43,6 +43,9 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="contact.css">
     
+    <!-- Scripts -->
+    <script src="script.js" defer></script>
+    
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
     {
@@ -117,7 +120,10 @@
             </div>
 
             <div class="contact-form-section">
-                <form class="contact-form" id="contactForm">
+                <form class="contact-form" id="contactForm" action="https://formspree.io/f/myzrdlpn" method="POST">
+                    <input type="hidden" name="_subject" value="New Contact Form Submission from JTE Events Website">
+                    <input type="hidden" name="_format" value="plain">
+                    <div id="form-status" style="display: none; padding: 1rem; margin-bottom: 1rem; border-radius: 4px; text-align: center;"></div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="firstName">First Name</label>
