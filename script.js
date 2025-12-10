@@ -231,16 +231,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // BACK TO TOP button - reload page to top
+    // BACK TO TOP button - smooth scroll to top
     const backToTopButton = document.querySelector('.contact-cta-secondary[href="index.html"]');
     if (backToTopButton) {
         backToTopButton.addEventListener('click', function(e) {
             e.preventDefault();
-            if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
-                window.location.reload();
-            } else {
-                window.location.href = 'index.html';
-            }
+            // Smooth scroll to top
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         });
     }
     
