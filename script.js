@@ -21,18 +21,18 @@
         let scrollLeft;
         let animationPaused = false;
         let firstSetWidth = 0;
-        let autoScrollInterval = null;
+        let autoScrollAnimationFrame = null;
         const scrollSpeed = 0.5;
         
         // Remove CSS animation
         carousel.style.animation = 'none';
         
-        // Auto-scroll function
+        // Auto-scroll function using requestAnimationFrame for seamless scrolling
         function startAutoScroll() {
-            // Clear any existing interval first
-            if (autoScrollInterval) {
-                clearInterval(autoScrollInterval);
-                autoScrollInterval = null;
+            // Clear any existing animation frame first
+            if (autoScrollAnimationFrame) {
+                cancelAnimationFrame(autoScrollAnimationFrame);
+                autoScrollAnimationFrame = null;
             }
             
             // Calculate width - use offsetWidth for more reliable measurement
@@ -47,7 +47,7 @@
             
             // Only start if we have a valid width and carousel is wider than wrapper
             if (firstSetWidth === 0 || firstSetWidth < 100 || carouselWidth <= wrapperWidth) {
-                // Retry after a short delay
+                // Retry after a delay (longer for mobile)
                 setTimeout(function() {
                     const retryWidth = carousel.scrollWidth || carousel.offsetWidth * 2;
                     firstSetWidth = retryWidth / 2;
@@ -56,29 +56,42 @@
                     
                     if (firstSetWidth > 0 && retryCarouselWidth > retryWrapperWidth) {
                         startAutoScroll();
+                    } else {
+                        // Final retry after images load
+                        window.addEventListener('load', function() {
+                            setTimeout(startAutoScroll, 500);
+                        });
                     }
-                }, 200);
+                }, 500);
                 return;
             }
             
-            // Start the interval
-            autoScrollInterval = setInterval(function() {
+            // Use requestAnimationFrame for smooth, seamless scrolling
+            function animate() {
                 if (!isDown && !animationPaused && firstSetWidth > 0) {
-                    // Use requestAnimationFrame for smoother scrolling
                     wrapper.scrollLeft += scrollSpeed;
                     
-                    // When we reach the end of the first set, seamlessly jump to start
-                    if (wrapper.scrollLeft >= firstSetWidth - 10) {
-                        wrapper.scrollLeft = wrapper.scrollLeft - firstSetWidth;
+                    // Seamlessly reset when we reach the end of the first set
+                    // Reset happens in the same frame to avoid visible jump
+                    const currentScroll = wrapper.scrollLeft;
+                    if (currentScroll >= firstSetWidth) {
+                        // Calculate how far past firstSetWidth we've scrolled
+                        const overflow = currentScroll - firstSetWidth;
+                        // Reset to the equivalent position in the first set
+                        // This ensures duplicate content appears in exact same position
+                        wrapper.scrollLeft = overflow;
                     }
                 }
-            }, 16); // ~60fps
+                autoScrollAnimationFrame = requestAnimationFrame(animate);
+            }
+            
+            autoScrollAnimationFrame = requestAnimationFrame(animate);
         }
         
         function stopAutoScroll() {
-            if (autoScrollInterval) {
-                clearInterval(autoScrollInterval);
-                autoScrollInterval = null;
+            if (autoScrollAnimationFrame) {
+                cancelAnimationFrame(autoScrollAnimationFrame);
+                autoScrollAnimationFrame = null;
             }
         }
         
@@ -160,13 +173,27 @@
                 touchStartX = 0;
                 handleSeamlessLoop();
                 animationPaused = false;
-                startAutoScroll();
+                // Add a small delay before restarting to ensure touch is fully ended
+                setTimeout(function() {
+                    startAutoScroll();
+                }, 100);
             }
         });
         
-        // Handle seamless loop on scroll events
+        // Handle touch cancel (e.g., when user scrolls page instead of carousel)
+        wrapper.addEventListener('touchcancel', function() {
+            if (touchStartX) {
+                touchStartX = 0;
+                animationPaused = false;
+                setTimeout(function() {
+                    startAutoScroll();
+                }, 100);
+            }
+        });
+        
+        // Handle seamless loop on scroll events (for manual scrolling)
         wrapper.addEventListener('scroll', function() {
-            if (!isDown) {
+            if (!isDown && !animationPaused) {
                 handleSeamlessLoop();
             }
         });
@@ -177,17 +204,63 @@
         
         // Initialize carousel
         function initialize() {
-            // Calculate width
-            firstSetWidth = carousel.scrollWidth / 2;
+            // Wait for images to load before calculating width
+            const images = carousel.querySelectorAll('img');
+            let imagesLoaded = 0;
+            const totalImages = images.length;
             
-            // Set initial scroll position
-            if (wrapper.scrollLeft === 0) {
-                wrapper.scrollLeft = 0;
+            if (totalImages === 0) {
+                // No images, calculate immediately
+                firstSetWidth = carousel.scrollWidth / 2;
+                startAutoScroll();
+                return;
             }
             
-            // Start auto-scroll
-            startAutoScroll();
+            // Wait for all images to load
+            images.forEach(function(img) {
+                if (img.complete) {
+                    imagesLoaded++;
+                    checkAllLoaded();
+                } else {
+                    img.addEventListener('load', function() {
+                        imagesLoaded++;
+                        checkAllLoaded();
+                    });
+                    img.addEventListener('error', function() {
+                        imagesLoaded++;
+                        checkAllLoaded();
+                    });
+                }
+            });
+            
+            function checkAllLoaded() {
+                if (imagesLoaded >= totalImages) {
+                    // All images loaded, calculate width with more precision
+                    setTimeout(function() {
+                        // Force a reflow to ensure accurate measurements
+                        void carousel.offsetWidth;
+                        // Calculate the exact width of the first set
+                        // Use scrollWidth which includes all content
+                        const totalWidth = carousel.scrollWidth;
+                        firstSetWidth = totalWidth / 2;
+                        
+                        // Ensure we have a valid width
+                        if (firstSetWidth > 0) {
+                            // Set initial scroll position to start of first set
+                            wrapper.scrollLeft = 0;
+                            startAutoScroll();
+                        }
+                    }, 150);
+                }
+            }
         }
+        
+        // Add visibility change handler to restart auto-scroll when page becomes visible
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && !isDown && !animationPaused && firstSetWidth > 0) {
+                setTimeout(startAutoScroll, 100);
+            }
+        });
         
         // Try multiple initialization methods
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
