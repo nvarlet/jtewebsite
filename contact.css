@@ -141,6 +141,8 @@
 .form-group textarea:focus {
     outline: none;
     border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 123, 194, 0.1);
+    transform: translateY(-1px);
 }
 
 .form-group textarea {
@@ -153,22 +155,59 @@
     background: transparent;
     color: var(--text-dark);
     border: 2px solid var(--text-dark);
-    border-radius: 0;
+    border-radius: 4px;
     font-weight: 600;
     font-size: 1rem;
     letter-spacing: 1px;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all var(--transition-base);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: var(--spacing-sm);
     align-self: center;
     min-width: 200px;
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(0, 123, 194, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.submit-button:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .submit-button:hover {
     background: var(--primary-blue);
     border-color: var(--primary-blue);
     color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 123, 194, 0.3);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+.submit-button:focus {
+    outline: 2px solid var(--primary-blue);
+    outline-offset: 4px;
+}
+
+.submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* Responsive */
