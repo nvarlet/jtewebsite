@@ -45,6 +45,32 @@
     
     <!-- Scripts -->
     <script src="script.js" defer></script>
+    <script>
+        // Wait for logo image to load before showing header
+        window.addEventListener('load', function() {
+            const header = document.querySelector('.header');
+            const logoImage = document.querySelector('.logo-image');
+            
+            function showHeader() {
+                if (header) header.classList.add('loaded');
+            }
+            
+            // Check if logo is already loaded
+            if (logoImage) {
+                if (logoImage.complete && logoImage.naturalWidth > 0) {
+                    showHeader();
+                } else {
+                    logoImage.addEventListener('load', showHeader, { once: true });
+                    logoImage.addEventListener('error', showHeader, { once: true });
+                }
+            } else {
+                showHeader();
+            }
+            
+            // Fallback: show after 1 second even if image isn't loaded
+            setTimeout(showHeader, 1000);
+        });
+    </script>
     
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">

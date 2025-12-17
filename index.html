@@ -112,6 +112,59 @@
     </script>
     
     <script src="script.js" defer></script>
+    <script>
+        // Wait for all critical images to load before showing content
+        window.addEventListener('load', function() {
+            const header = document.querySelector('.header');
+            const hero = document.querySelector('.hero');
+            const heroImages = document.querySelectorAll('.hero-tiles-background img');
+            const logoImage = document.querySelector('.logo-image');
+            
+            let imagesToLoad = heroImages.length + 1; // hero images + logo
+            let imagesLoaded = 0;
+            
+            function checkAllLoaded() {
+                imagesLoaded++;
+                if (imagesLoaded >= imagesToLoad) {
+                    // All images loaded, show everything
+                    if (header) header.classList.add('loaded');
+                    if (hero) hero.classList.add('loaded');
+                }
+            }
+            
+            // Check if logo is already loaded
+            if (logoImage) {
+                if (logoImage.complete && logoImage.naturalWidth > 0) {
+                    checkAllLoaded();
+                } else {
+                    logoImage.addEventListener('load', checkAllLoaded, { once: true });
+                    logoImage.addEventListener('error', checkAllLoaded, { once: true });
+                }
+            } else {
+                imagesToLoad--;
+            }
+            
+            // Check hero images
+            heroImages.forEach(function(img) {
+                if (img.complete && img.naturalWidth > 0) {
+                    checkAllLoaded();
+                } else {
+                    img.addEventListener('load', checkAllLoaded, { once: true });
+                    img.addEventListener('error', checkAllLoaded, { once: true });
+                }
+            });
+            
+            // Fallback: show after 2 seconds even if images aren't loaded
+            setTimeout(function() {
+                if (header && !header.classList.contains('loaded')) {
+                    header.classList.add('loaded');
+                }
+                if (hero && !hero.classList.contains('loaded')) {
+                    hero.classList.add('loaded');
+                }
+            }, 2000);
+        });
+    </script>
 </head>
 <body>
     <!-- Header/Navigation -->

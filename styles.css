@@ -79,6 +79,12 @@ body {
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--medium-grey);
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+.header.loaded {
+    opacity: 1;
 }
 
 .header .container {
@@ -206,6 +212,12 @@ body {
     overflow: hidden;
     background: var(--primary-blue);
     padding: var(--spacing-2xl) 0;
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+.hero.loaded {
+    opacity: 1;
 }
 
 .hero-tiles-background {
@@ -221,8 +233,13 @@ body {
     padding: 8px;
     width: 100%;
     height: 100%;
-    opacity: 0.25;
+    opacity: 0;
     min-height: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+.hero.loaded .hero-tiles-background {
+    opacity: 0.25;
 }
 
 .hero-tile {
@@ -274,7 +291,14 @@ body {
 }
 
 .hero-text {
-    animation: fadeInUp 0.8s ease-out;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s;
+}
+
+.hero.loaded .hero-text {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .hero-title {
