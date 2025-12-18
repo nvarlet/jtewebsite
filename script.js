@@ -403,18 +403,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const contactForm = document.getElementById('contactForm');
     const formStatus = document.getElementById('form-status');
     
-    if (contactForm && formStatus) {
+    if (contactForm) {
+        // Find or create form status element
+        let statusElement = formStatus;
+        if (!statusElement) {
+            // Try to find it by class or create it
+            statusElement = contactForm.querySelector('#form-status') || 
+                          contactForm.querySelector('.form-status');
+            if (!statusElement) {
+                // Create status element if it doesn't exist
+                statusElement = document.createElement('div');
+                statusElement.id = 'form-status';
+                statusElement.style.display = 'none';
+                statusElement.style.padding = '1rem';
+                statusElement.style.marginBottom = '1rem';
+                statusElement.style.borderRadius = '4px';
+                statusElement.style.textAlign = 'center';
+                contactForm.insertBefore(statusElement, contactForm.firstChild);
+            }
+        }
+        
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             // Disable submit button
             const submitButton = contactForm.querySelector('button[type="submit"]');
+            if (!submitButton) {
+                console.error('Submit button not found');
+                return;
+            }
+            
             const originalButtonText = submitButton.textContent;
             submitButton.disabled = true;
             submitButton.textContent = 'SENDING...';
             
             // Hide any previous status messages
-            formStatus.style.display = 'none';
+            if (statusElement) {
+                statusElement.style.display = 'none';
+            }
             
             // Get form data
             const formData = new FormData(contactForm);
@@ -430,24 +456,31 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => {
                 if (response.ok) {
                     // Success
-                    formStatus.style.display = 'block';
-                    formStatus.style.backgroundColor = '#d4edda';
-                    formStatus.style.color = '#155724';
-                    formStatus.style.border = '1px solid #c3e6cb';
-                    formStatus.textContent = 'Thank you! Your message has been sent successfully. We will get back to you soon.';
+                    if (statusElement) {
+                        statusElement.style.display = 'block';
+                        statusElement.style.backgroundColor = '#d4edda';
+                        statusElement.style.color = '#155724';
+                        statusElement.style.border = '1px solid #c3e6cb';
+                        statusElement.textContent = 'Thank you! Your message has been sent successfully. We will get back to you soon.';
+                    }
                     contactForm.reset();
                 } else {
                     // Error from Formspree
-                    throw new Error('Form submission failed');
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Form submission failed');
+                    });
                 }
             })
             .catch(error => {
                 // Network or other error
-                formStatus.style.display = 'block';
-                formStatus.style.backgroundColor = '#f8d7da';
-                formStatus.style.color = '#721c24';
-                formStatus.style.border = '1px solid #f5c6cb';
-                formStatus.textContent = 'Sorry, there was an error sending your message. Please try again or contact us directly at sales@jteevents.com.au';
+                if (statusElement) {
+                    statusElement.style.display = 'block';
+                    statusElement.style.backgroundColor = '#f8d7da';
+                    statusElement.style.color = '#721c24';
+                    statusElement.style.border = '1px solid #f5c6cb';
+                    statusElement.textContent = 'Sorry, there was an error sending your message. Please try again or contact us directly at sales@jteevents.com.au';
+                }
+                console.error('Form submission error:', error);
             })
             .finally(() => {
                 // Re-enable submit button
@@ -455,8 +488,115 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitButton.textContent = originalButtonText;
                 
                 // Scroll to status message
-                formStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                if (statusElement) {
+                    statusElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
             });
         });
     }
+    
+    // Active section indicator
+    function initActiveSectionIndicator() {
+        const sections = [
+            { id: 'home', link: document.querySelector('a[href="#home"]') },
+            { id: 'services', link: document.querySelector('a[href="#services"]') },
+            { id: 'clients', link: document.querySelector('a[href="#clients"]') }
+        ];
+        
+        const navLinks = sections.map(s => s.link).filter(Boolean);
+        
+        if (navLinks.length === 0) return;
+        
+        function updateActiveSection() {
+            const scrollPosition = window.scrollY + 150; // Offset for header
+            
+            let activeSection = null;
+            let minDistance = Infinity;
+            
+            sections.forEach(section => {
+                const element = document.getElementById(section.id);
+                if (!element) return;
+                
+                const rect = element.getBoundingClientRect();
+                const elementTop = rect.top + window.scrollY;
+                const elementBottom = elementTop + rect.height;
+                
+                // Check if section is in viewport
+                if (scrollPosition >= elementTop && scrollPosition <= elementBottom) {
+                    const distance = Math.abs(scrollPosition - elementTop);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        activeSection = section;
+                    }
+                }
+            });
+            
+            // If no section is in view, find the closest one
+            if (!activeSection) {
+                sections.forEach(section => {
+                    const element = document.getElementById(section.id);
+                    if (!element) return;
+                    
+                    const rect = element.getBoundingClientRect();
+                    const elementTop = rect.top + window.scrollY;
+                    const distance = Math.abs(scrollPosition - elementTop);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        activeSection = section;
+                    }
+                });
+            }
+            
+            // Update active state
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            if (activeSection && activeSection.link) {
+                activeSection.link.classList.add('active');
+            }
+        }
+        
+        // Update on scroll
+        let ticking = false;
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    updateActiveSection();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+        
+        // Initial update
+        updateActiveSection();
+        
+        // Update when clicking nav links (with delay to account for smooth scroll)
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                setTimeout(updateActiveSection, 500);
+            });
+        });
+        
+        // Handle hash in URL on page load
+        if (window.location.hash) {
+            const hash = window.location.hash.substring(1);
+            const section = sections.find(s => s.id === hash);
+            if (section && section.link) {
+                setTimeout(function() {
+                    section.link.classList.add('active');
+                    navLinks.forEach(link => {
+                        if (link !== section.link) {
+                            link.classList.remove('active');
+                        }
+                    });
+                }, 100);
+            }
+        }
+    }
+    
+    // Initialize active section indicator
+    initActiveSectionIndicator();
 });
