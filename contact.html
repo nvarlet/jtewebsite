@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Primary Meta Tags -->
-    <title>Contact JTE Events | Get a Quote for Branded Apparel & Promotional Products</title>
-    <meta name="title" content="Contact JTE Events | Get a Quote for Branded Apparel & Promotional Products">
+    <title>Contact JTE Events</title>
+    <meta name="title" content="Contact JTE Events">
     <meta name="description" content="Contact JTE Events for custom branded apparel, promotional products, and event management services. Call 0418 766 788 or email sales@jteevents.com.au for a free quote.">
     <meta name="keywords" content="contact JTE Events, branded apparel quote, promotional products Australia, custom merchandise quote, event management contact, corporate hospitality services">
     <meta name="author" content="JTE Events">
@@ -17,7 +17,7 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.jteevents.com.au/contact.html">
-    <meta property="og:title" content="Contact JTE Events | Get a Quote for Branded Apparel & Promotional Products">
+    <meta property="og:title" content="Contact JTE Events">
     <meta property="og:description" content="Contact JTE Events for custom branded apparel, promotional products, and event management services. Get a free quote today.">
     <meta property="og:image" content="https://www.jteevents.com.au/images/JTE Events.png">
     <meta property="og:site_name" content="JTE Events">
@@ -26,7 +26,7 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://www.jteevents.com.au/contact.html">
-    <meta name="twitter:title" content="Contact JTE Events | Get a Quote">
+    <meta name="twitter:title" content="Contact JTE Events">
     <meta name="twitter:description" content="Contact JTE Events for custom branded apparel, promotional products, and event management services.">
     <meta name="twitter:image" content="https://www.jteevents.com.au/images/JTE Events.png">
     
@@ -45,6 +45,32 @@
     
     <!-- Scripts -->
     <script src="script.js" defer></script>
+    <script>
+        // Wait for logo image to load before showing header
+        window.addEventListener('load', function() {
+            const header = document.querySelector('.header');
+            const logoImage = document.querySelector('.logo-image');
+            
+            function showHeader() {
+                if (header) header.classList.add('loaded');
+            }
+            
+            // Check if logo is already loaded
+            if (logoImage) {
+                if (logoImage.complete && logoImage.naturalWidth > 0) {
+                    showHeader();
+                } else {
+                    logoImage.addEventListener('load', showHeader, { once: true });
+                    logoImage.addEventListener('error', showHeader, { once: true });
+                }
+            } else {
+                showHeader();
+            }
+            
+            // Fallback: show after 1 second even if image isn't loaded
+            setTimeout(showHeader, 1000);
+        });
+    </script>
     
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -169,17 +195,6 @@
                         <li><a href="index.html#services">Services</a></li>
                         <li><a href="index.html#clients">Clients</a></li>
                         <li><a href="contact.html">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4 class="footer-heading">Services</h4>
-                    <ul class="footer-links">
-                        <li><a href="index.html#services">Branded Apparel</a></li>
-                        <li><a href="index.html#services">Promotional Products</a></li>
-                        <li><a href="index.html#services">Event Management</a></li>
-                        <li><a href="index.html#services">Corporate Hospitality</a></li>
-                        <li><a href="index.html#services">Fundraising Events</a></li>
-                        <li><a href="index.html#services">Merchandise Programs</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">

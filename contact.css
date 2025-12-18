@@ -169,23 +169,6 @@
     overflow: hidden;
 }
 
-.submit-button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(0, 123, 194, 0.1);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.submit-button:hover::before {
-    width: 300px;
-    height: 300px;
-}
 
 .submit-button:hover {
     background: var(--primary-blue);

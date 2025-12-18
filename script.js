@@ -56,7 +56,12 @@
 (function() {
     'use strict';
     
+    let carouselInitialized = false;
+    
     function initCarousel() {
+        // Prevent multiple initializations
+        if (carouselInitialized) return;
+        
         const carousel = document.querySelector('.clients-scroll');
         const wrapper = document.querySelector('.clients-scroll-wrapper');
         
@@ -65,10 +70,12 @@
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initCarousel);
             } else {
-                setTimeout(initCarousel, 100);
+                setTimeout(initCarousel, 200);
             }
             return;
         }
+        
+        carouselInitialized = true;
         
         let isDown = false;
         let startX;
@@ -118,11 +125,10 @@
             // Start the interval
             autoScrollInterval = setInterval(function() {
                 if (!isDown && !animationPaused && firstSetWidth > 0) {
-                    // Use requestAnimationFrame for smoother scrolling
                     wrapper.scrollLeft += scrollSpeed;
                     
                     // When we reach the end of the first set, seamlessly jump to start
-                    if (wrapper.scrollLeft >= firstSetWidth - 10) {
+                    if (wrapper.scrollLeft >= firstSetWidth) {
                         wrapper.scrollLeft = wrapper.scrollLeft - firstSetWidth;
                     }
                 }
@@ -229,53 +235,132 @@
         wrapper.style.cursor = 'grab';
         wrapper.style.userSelect = 'none';
         
-        // Initialize carousel - wait for images to load
-        function initialize() {
-            // Wait for carousel to be visible (images loaded)
-            const checkLoaded = setInterval(function() {
-                if (carousel.classList.contains('loaded')) {
-                    clearInterval(checkLoaded);
-                    // Calculate width
-                    firstSetWidth = carousel.scrollWidth / 2;
-                    
-                    // Set initial scroll position
-                    if (wrapper.scrollLeft === 0) {
-                        wrapper.scrollLeft = 0;
-                    }
-                    
-                    // Start auto-scroll
-                    startAutoScroll();
-                }
-            }, 100);
+        // Initialize carousel - wait for images to load and fade-in to complete
+        function initializeCarousel() {
+            // Check if carousel is visible (has 'loaded' class)
+            const isCarouselLoaded = carousel.classList.contains('loaded');
             
-            // Fallback timeout
-            setTimeout(function() {
-                clearInterval(checkLoaded);
-                firstSetWidth = carousel.scrollWidth / 2;
-                if (wrapper.scrollLeft === 0) {
-                    wrapper.scrollLeft = 0;
+            // Wait for images to load before calculating width
+            const images = carousel.querySelectorAll('img');
+            const totalImages = images.length;
+            
+            // Function to calculate and start
+            function calculateAndStart() {
+                // Wait a bit for fade-in transition to complete if carousel just loaded
+                if (isCarouselLoaded) {
+                    setTimeout(function() {
+                        doCalculateAndStart();
+                    }, 700); // Wait for 0.6s fade + 0.1s buffer
+                } else {
+                    // If not loaded yet, wait for it
+                    const checkLoaded = setInterval(function() {
+                        if (carousel.classList.contains('loaded')) {
+                            clearInterval(checkLoaded);
+                            setTimeout(function() {
+                                doCalculateAndStart();
+                            }, 700);
+                        }
+                    }, 100);
+                    
+                    // Fallback: start anyway after 3 seconds
+                    setTimeout(function() {
+                        clearInterval(checkLoaded);
+                        doCalculateAndStart();
+                    }, 3000);
                 }
-                startAutoScroll();
-            }, 6000);
+            }
+            
+            function doCalculateAndStart() {
+                // Force a reflow to ensure accurate measurements
+                void carousel.offsetWidth;
+                void wrapper.offsetWidth;
+                
+                // Calculate the exact width of the first set
+                const totalWidth = carousel.scrollWidth;
+                
+                if (totalWidth > 0) {
+                    firstSetWidth = totalWidth / 2;
+                    const wrapperWidth = wrapper.clientWidth;
+                    
+                    // Ensure we have a valid width and carousel is scrollable
+                    if (firstSetWidth > wrapperWidth && firstSetWidth > 100) {
+                        // Set initial scroll position to start of first set
+                        wrapper.scrollLeft = 0;
+                        
+                        // Start auto-scroll
+                        startAutoScroll();
+                    } else {
+                        // Retry after a delay
+                        setTimeout(initializeCarousel, 300);
+                    }
+                } else {
+                    // Retry after a delay
+                    setTimeout(initializeCarousel, 300);
+                }
+            }
+            
+            // Wait for images to load before starting
+            if (totalImages === 0) {
+                // No images, calculate immediately
+                calculateAndStart();
+            } else {
+                let allLoaded = false;
+                let imagesLoadedCount = 0;
+                
+                // Count already loaded images
+                images.forEach(function(img) {
+                    if (img.complete && img.naturalWidth > 0) {
+                        imagesLoadedCount++;
+                    }
+                });
+                
+                // If all images are already loaded, start immediately
+                if (imagesLoadedCount >= totalImages) {
+                    calculateAndStart();
+                } else {
+                    // Wait for all images to load before starting
+                    images.forEach(function(img) {
+                        if (!img.complete || img.naturalWidth === 0) {
+                            const loadHandler = function() {
+                                imagesLoadedCount++;
+                                if (imagesLoadedCount >= totalImages && !allLoaded) {
+                                    allLoaded = true;
+                                    calculateAndStart();
+                                }
+                            };
+                            const errorHandler = function() {
+                                imagesLoadedCount++;
+                                if (imagesLoadedCount >= totalImages && !allLoaded) {
+                                    allLoaded = true;
+                                    calculateAndStart();
+                                }
+                            };
+                            img.addEventListener('load', loadHandler, { once: true });
+                            img.addEventListener('error', errorHandler, { once: true });
+                        }
+                    });
+                    
+                    // Fallback: if images take too long, start anyway after 3 seconds
+                    setTimeout(function() {
+                        if (!allLoaded) {
+                            calculateAndStart();
+                        }
+                    }, 3000);
+                }
+            }
         }
         
-        // Try multiple initialization methods
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            // Wait a bit for layout to settle
-            setTimeout(initialize, 200);
-        } else {
-            document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(initialize, 200);
-            });
-        }
-        
-        // Also try after window load
-        window.addEventListener('load', function() {
-            setTimeout(initialize, 400);
+        // Add visibility change handler to restart auto-scroll when page becomes visible
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && firstSetWidth > 0 && !animationPaused) {
+                setTimeout(startAutoScroll, 200);
+            } else if (document.hidden) {
+                stopAutoScroll();
+            }
         });
         
-        // Final fallback
-        setTimeout(initialize, 1000);
+        // Start initialization
+        initializeCarousel();
     }
     
     // Start initialization

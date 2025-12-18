@@ -79,6 +79,12 @@ body {
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--medium-grey);
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+.header.loaded {
+    opacity: 1;
 }
 
 .header .container {
@@ -206,6 +212,12 @@ body {
     overflow: hidden;
     background: var(--primary-blue);
     padding: var(--spacing-2xl) 0;
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+.hero.loaded {
+    opacity: 1;
 }
 
 .hero-tiles-background {
@@ -221,6 +233,12 @@ body {
     padding: 8px;
     width: 100%;
     height: 100%;
+    opacity: 0;
+    min-height: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+.hero.loaded .hero-tiles-background {
     opacity: 0.25;
 }
 
@@ -229,6 +247,8 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
+    min-width: 0;
+    min-height: 0;
 }
 
 .hero-tile::before {
@@ -247,6 +267,8 @@ body {
     height: 100%;
     object-fit: cover;
     display: block;
+    min-height: 0;
+    aspect-ratio: 1;
 }
 
 .hero-overlay {
@@ -255,7 +277,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to bottom, rgba(0, 123, 194, 0.6) 0%, rgba(0, 123, 194, 0.75) 100%);
+    background: linear-gradient(to bottom, rgba(0, 123, 194, 0.4) 0%, rgba(0, 123, 194, 0.5) 100%);
     z-index: 1;
 }
 
@@ -269,7 +291,14 @@ body {
 }
 
 .hero-text {
-    animation: fadeInUp 0.8s ease-out;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s;
+}
+
+.hero.loaded .hero-text {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .hero-title {
@@ -319,23 +348,6 @@ body {
     overflow: hidden;
 }
 
-.cta-button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.cta-button:hover::before {
-    width: 300px;
-    height: 300px;
-}
 
 .cta-button:focus {
     outline: 2px solid var(--white);
@@ -683,6 +695,7 @@ body {
     align-items: center;
     width: fit-content;
     min-width: 200%;
+    opacity: 0;
     transition: opacity 0.6s ease;
 }
 
@@ -812,23 +825,6 @@ body {
     overflow: hidden;
 }
 
-.contact-cta-button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.contact-cta-button:hover::before {
-    width: 300px;
-    height: 300px;
-}
 
 .contact-cta-button:hover {
     background: var(--primary-blue-dark);
@@ -873,10 +869,13 @@ body {
 .footer-content {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-xl);
-    margin-bottom: var(--spacing-xl);
-    padding-bottom: var(--spacing-xl);
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .footer-column {
