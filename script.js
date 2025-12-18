@@ -1,3 +1,57 @@
+// Preload client logos and fade in carousel
+(function() {
+    'use strict';
+    
+    function preloadClientLogos() {
+        const clientImages = document.querySelectorAll('.clients-scroll .client-logo-img');
+        const clientsScroll = document.querySelector('.clients-scroll');
+        const clientsLoader = document.querySelector('.clients-loader');
+        
+        if (!clientImages.length || !clientsScroll || !clientsLoader) {
+            return;
+        }
+        
+        let loadedCount = 0;
+        const totalImages = clientImages.length;
+        
+        function imageLoaded() {
+            loadedCount++;
+            if (loadedCount === totalImages) {
+                // All images loaded, fade in carousel
+                setTimeout(function() {
+                    clientsScroll.classList.add('loaded');
+                    clientsLoader.classList.add('hidden');
+                }, 100);
+            }
+        }
+        
+        // Preload all images
+        clientImages.forEach(function(img) {
+            if (img.complete) {
+                imageLoaded();
+            } else {
+                img.addEventListener('load', imageLoaded);
+                img.addEventListener('error', imageLoaded); // Count errors too to prevent hanging
+            }
+        });
+        
+        // Fallback timeout in case some images don't load
+        setTimeout(function() {
+            if (loadedCount < totalImages) {
+                clientsScroll.classList.add('loaded');
+                clientsLoader.classList.add('hidden');
+            }
+        }, 5000);
+    }
+    
+    // Start preloading when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', preloadClientLogos);
+    } else {
+        preloadClientLogos();
+    }
+})();
+
 // Carousel drag functionality with seamless infinite loop
 (function() {
     'use strict';
@@ -175,37 +229,53 @@
         wrapper.style.cursor = 'grab';
         wrapper.style.userSelect = 'none';
         
-        // Initialize carousel
+        // Initialize carousel - wait for images to load
         function initialize() {
-            // Calculate width
-            firstSetWidth = carousel.scrollWidth / 2;
+            // Wait for carousel to be visible (images loaded)
+            const checkLoaded = setInterval(function() {
+                if (carousel.classList.contains('loaded')) {
+                    clearInterval(checkLoaded);
+                    // Calculate width
+                    firstSetWidth = carousel.scrollWidth / 2;
+                    
+                    // Set initial scroll position
+                    if (wrapper.scrollLeft === 0) {
+                        wrapper.scrollLeft = 0;
+                    }
+                    
+                    // Start auto-scroll
+                    startAutoScroll();
+                }
+            }, 100);
             
-            // Set initial scroll position
-            if (wrapper.scrollLeft === 0) {
-                wrapper.scrollLeft = 0;
-            }
-            
-            // Start auto-scroll
-            startAutoScroll();
+            // Fallback timeout
+            setTimeout(function() {
+                clearInterval(checkLoaded);
+                firstSetWidth = carousel.scrollWidth / 2;
+                if (wrapper.scrollLeft === 0) {
+                    wrapper.scrollLeft = 0;
+                }
+                startAutoScroll();
+            }, 6000);
         }
         
         // Try multiple initialization methods
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
             // Wait a bit for layout to settle
-            setTimeout(initialize, 100);
+            setTimeout(initialize, 200);
         } else {
             document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(initialize, 100);
+                setTimeout(initialize, 200);
             });
         }
         
         // Also try after window load
         window.addEventListener('load', function() {
-            setTimeout(initialize, 300);
+            setTimeout(initialize, 400);
         });
         
         // Final fallback
-        setTimeout(initialize, 500);
+        setTimeout(initialize, 1000);
     }
     
     // Start initialization
