@@ -508,40 +508,60 @@ document.addEventListener('DOMContentLoaded', function() {
         if (navLinks.length === 0) return;
         
         function updateActiveSection() {
-            const scrollPosition = window.scrollY + 150; // Offset for header
+            const viewportHeight = window.innerHeight;
+            const scrollY = window.scrollY;
+            const headerOffset = 120; // Account for header
+            const viewportTop = scrollY + headerOffset;
+            const viewportBottom = scrollY + viewportHeight;
             
             let activeSection = null;
-            let minDistance = Infinity;
+            let bestScore = -1;
             
             sections.forEach(section => {
                 const element = document.getElementById(section.id);
                 if (!element) return;
                 
                 const rect = element.getBoundingClientRect();
-                const elementTop = rect.top + window.scrollY;
+                const elementTop = rect.top + scrollY;
                 const elementBottom = elementTop + rect.height;
+                const elementHeight = rect.height;
                 
-                // Check if section is in viewport
-                if (scrollPosition >= elementTop && scrollPosition <= elementBottom) {
-                    const distance = Math.abs(scrollPosition - elementTop);
-                    if (distance < minDistance) {
-                        minDistance = distance;
+                // Calculate visible portion of section
+                const visibleTop = Math.max(viewportTop, elementTop);
+                const visibleBottom = Math.min(viewportBottom, elementBottom);
+                const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+                
+                // Section must have meaningful visibility (at least 40% of viewport or 40% of section)
+                const viewportVisibility = visibleHeight / viewportHeight;
+                const sectionVisibility = visibleHeight / elementHeight;
+                const minVisibility = Math.min(viewportVisibility, sectionVisibility);
+                
+                if (minVisibility >= 0.4) {
+                    // Score based on: how close section top is to viewport top, and visibility
+                    const distanceFromTop = Math.abs(viewportTop - elementTop);
+                    const normalizedDistance = Math.min(distanceFromTop / viewportHeight, 1);
+                    const score = (1 - normalizedDistance) * 60 + minVisibility * 40;
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
                         activeSection = section;
                     }
                 }
             });
             
-            // If no section is in view, find the closest one
+            // Fallback: if no section meets visibility threshold, find closest to viewport top
             if (!activeSection) {
+                let minDistance = Infinity;
                 sections.forEach(section => {
                     const element = document.getElementById(section.id);
                     if (!element) return;
                     
                     const rect = element.getBoundingClientRect();
-                    const elementTop = rect.top + window.scrollY;
-                    const distance = Math.abs(scrollPosition - elementTop);
+                    const elementTop = rect.top + scrollY;
+                    const distance = Math.abs(viewportTop - elementTop);
                     
-                    if (distance < minDistance) {
+                    // Only consider if section is above or just below viewport top
+                    if (elementTop <= viewportBottom && distance < minDistance) {
                         minDistance = distance;
                         activeSection = section;
                     }
@@ -558,9 +578,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        // Flag to prevent scroll handler from interfering with click updates
+        let isClickNavigation = false;
+        let clickNavigationTimeout = null;
+        
         // Update on scroll
         let ticking = false;
         window.addEventListener('scroll', function() {
+            // Don't update if we just clicked a nav link
+            if (isClickNavigation) return;
+            
             if (!ticking) {
                 window.requestAnimationFrame(function() {
                     updateActiveSection();
@@ -573,10 +600,43 @@ document.addEventListener('DOMContentLoaded', function() {
         // Initial update
         updateActiveSection();
         
-        // Update when clicking nav links (with delay to account for smooth scroll)
+        // Update when clicking nav links (smooth transition)
         navLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                setTimeout(updateActiveSection, 500);
+            link.addEventListener('click', function(e) {
+                const href = link.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    const sectionId = href.substring(1);
+                    const clickedSection = sections.find(s => s.id === sectionId);
+                    
+                    // Set flag to prevent scroll handler interference
+                    isClickNavigation = true;
+                    
+                    // Clear any existing timeout
+                    if (clickNavigationTimeout) {
+                        clearTimeout(clickNavigationTimeout);
+                    }
+                    
+                    // Smoothly update active state
+                    navLinks.forEach(l => {
+                        if (l !== clickedSection.link) {
+                            l.classList.remove('active');
+                        }
+                    });
+                    
+                    // Use requestAnimationFrame for smooth transition
+                    requestAnimationFrame(function() {
+                        if (clickedSection && clickedSection.link) {
+                            clickedSection.link.classList.add('active');
+                        }
+                    });
+                    
+                    // Re-enable scroll handler after transition completes
+                    clickNavigationTimeout = setTimeout(function() {
+                        isClickNavigation = false;
+                        // Final update to ensure correct state
+                        updateActiveSection();
+                    }, 300);
+                }
             });
         });
         
